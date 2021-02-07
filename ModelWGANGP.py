@@ -15,12 +15,10 @@ import logger
 from datetime import datetime
 from HDF5_Read import *
 from Discriminator import *
-from Generator import *
+from Generator import GeneratorNet, Train_Loss
 from VGG19 import *
 from Weight_Init import *
 from Train_Disc import *
-from WGANGPTrain_Gen import *
-from Train_GIoU import *
 
 class JSLWGAN_GIoU:
 
@@ -59,7 +57,7 @@ class JSLWGAN_GIoU:
         self.vgg19 = VGG19().to("cuda:0")
         # TODO: 
         self.generator = GeneratorNet().to("cuda:0")
-        self.Train_GIoU = Train_GIoU().to("cuda:0")
+        self.Train_Loss = Train_Loss().to("cuda:0")
         
         self.G_optimizer = optim.Adam(self.generator.parameters(), lr=self.lr, betas=(0.5, 0.9))
         self.D_optimizer = optim.Adam(self.discriminator.parameters(), lr=self.lr, betas=(0.5, 0.9))
@@ -78,7 +76,7 @@ class JSLWGAN_GIoU:
                 self.discriminator = nn.DataParallel(self.discriminator, device_ids = gpu_ids)
                 self.vgg19 = nn.DataParallel(self.vgg19, device_ids = gpu_ids)
                 self.generator = nn.DataParallel(self.generator, device_ids=gpu_ids)
-                self.Train_GIoU = nn.DataParallel(self.Train_GIoU, device_ids=gpu_ids)
+                self.Train_Loss = nn.DataParallel(self.Train_Loss, device_ids=gpu_ids)
             self.gpu = True
     
         if not self.load_model():
@@ -87,8 +85,6 @@ class JSLWGAN_GIoU:
 
 
     def train(self, args):
-
-        self.save_parameters()
         self.Traindataset = H5Dataset(args.input_dir_train)
         self.Traindataloader = torch.utils.data.DataLoader(
         self.Traindataset,
@@ -113,32 +109,35 @@ class JSLWGAN_GIoU:
             self.generator.train()
             self.discriminator.train()
             with tqdm(total=len(self.Traindataloader.dataset)) as progress_bar:
-
                 for i, (Ori_img, Seg_img, Name_img) in enumerate(self.Traindataloader):
-                    #print(Name_img)
-                    #print(Ori_img.shape,Ori_img.dtype,Seg_img.shape,Seg_img.dtype)
                     
                     Ori_img = Ori_img.view(self.batch_size, 1, 1, self.dicom_Height, self.dicom_Width)
                     Seg_img = Seg_img.view(self.batch_size, 1, 1, self.dicom_Height, self.dicom_Width)
                     
                     for _ in range(self.d_iter):
                         loss_d = Train_Disc(self, Seg_img, Ori_img)
-                        #print("\tD_loss - lr: %.10f, Epoch: %d, bath_index: %d, er: %d, D-Loss: " %
-                        #       (self.lr, self.epoch, batch_index, iter_i), loss_d)
                 
-                    loss_g = WGANGPTrain_Gen(self, Seg_img, Ori_img, batch_index)
+                    z = Variable(Ori_img, requires_grad=True)
+                    real_img = Variable(Seg_img, requires_grad=False) 
 
-                    if Test_Gloss > abs(loss_g[0]): 
-                        Test_Gloss = abs(loss_g[0])
-                        self.save_dir = self.save_model_dir + self.time + "/" + self.time
-                        self.save_G_model(batch_index)
-                    if Test_Dloss > abs(loss_d[0]):
-                        Test_Dloss = abs(loss_d[0])
-                        self.save_dir = self.save_model_dir + self.time + "/" + self.time
-                        self.save_D_model(batch_index)
+                    if self.gpu:
+                        z = z.cuda()
+                        real_img = real_img.cuda()
 
-                    self.save_loss(loss_d[0], loss_d[1], loss_d[2], loss_d[3], loss_g[0],loss_g[1],loss_g[2], 'Train')
+                    self.G_optimizer.zero_grad()
+                    for p in self.discriminator.parameters():
+                        p.requires_grad = False  # to avoid computation
+                        
+                    fake_img = self.generator(z).cuda()
+                    fake_validity = self.discriminator(fake_img)
+                    
+                    if train:
+                        for p in self.generator.parameters():
+                            p.requires_grad = True  # to active computation
 
+                        loss_g = self.Train_Loss(fake_img, real_img, fake_validity)
+                        loss_g.backward()
+                        self.G_optimizer.step()
                     progress_bar.update(self.batch_size)
                     
             self.discriminator.eval()
@@ -148,20 +147,21 @@ class JSLWGAN_GIoU:
                 for j, (Ori_img, Seg_img,Name_img) in enumerate(self.Testdataloader):
                     Ori_img = Ori_img.view(self.batch_size, 1, 1, self.dicom_Height, self.dicom_Width)
                     Seg_img = Seg_img.view(self.batch_size, 1, 1, self.dicom_Height, self.dicom_Width)
-                    with torch.set_grad_enabled(True):
-                        loss_d = Train_Disc(self, Seg_img, Ori_img)
-                        loss_g = WGANGPTrain_Gen(self, Seg_img, Ori_img,batch_index)
 
-                        if Test_Gloss > abs(loss_g[0]): 
-                            Test_Gloss = abs(loss_g[0])
-                            self.save_dir = self.save_model_dir + self.time + "/" + self.time
-                            self.save_G_model(batch_index)
-                        if Test_Dloss > abs(loss_d[0]):
-                            Test_Dloss = abs(loss_d[0])
-                            self.save_dir = self.save_model_dir + self.time + "/" + self.time
-                            self.save_D_model(batch_index)
+                    loss_d = Train_Disc(self, Seg_img, Ori_img)
+                    fake_img = self.generator(Seg_img).cuda()
+                    real_img = Variable(Seg_img, requires_grad=False) 
+                    fake_validity = self.discriminator(fake_img)
+                    loss_g = self.Train_Loss(fake_img, real_img, fake_validity)
 
-                        self.save_loss(loss_d[0], loss_d[1], loss_d[2], loss_d[3], loss_g[0],loss_g[1],loss_g[2], 'Test')
+                    if Test_Gloss > abs(loss_g): 
+                        Test_Gloss = abs(loss_g)
+                        self.save_dir = self.save_model_dir + self.time + "/" + self.time
+                        self.save_G_model(batch_index)
+                    if Test_Dloss > abs(loss_d):
+                        Test_Dloss = abs(loss_d)
+                        self.save_dir = self.save_model_dir + self.time + "/" + self.time
+                        self.save_D_model(batch_index)
 
                     dev_progress_bar.update(self.batch_size)
 
@@ -188,7 +188,6 @@ class JSLWGAN_GIoU:
         else:
             return False
 
-
     def save_G_model(self,batch_index):
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
@@ -200,36 +199,6 @@ class JSLWGAN_GIoU:
             os.makedirs(self.save_dir)
         torch.save(self.discriminator.state_dict(),
                    self.save_dir + str(batch_index) + "D_" + self.v + ".pkl")
-                   
-    def save_model(self,batch_index):
-        if not os.path.exists(self.save_dir):
-            os.makedirs(self.save_dir)
-        torch.save(self.generator.state_dict(),
-                   self.save_dir + "G_" + self.v + ".pkl")
-        torch.save(self.discriminator.state_dict(),
-                   self.save_dir + "D_" + self.v + ".pkl")
-        print(batch_index)
-
-    def save_loss(self, loss_d1, loss_d2, loss_d3, loss_d4, loss_g1,loss_g2,loss_g3, flag):
-        value = ""
-        value = value+str(loss_d1)+" "+str(loss_d2)+" "+str(loss_d3)+" "+str(loss_d4)+" "+str(loss_g1)+" "+str(loss_g2)+" "+str(loss_g3)
-        value += "\n"
-        if flag == 'Train':
-            with open("./loss/" + self.v + self.time + "_Train" + ".csv", "a+") as f:
-                f.write(value)
-        else:
-            with open("./loss/" + self.v + self.time + "_Test" + ".csv", "a+") as f:
-                f.write(value)
-
-    def save_parameters(self):
-        value = "Time: " + '{}'.format(datetime.now().strftime('%b%d_%H%M')) + ","\
-        +"lambda_vgg: " + str(self.lambda_vgg) + ","\
-        + "lambda_d_real: " + str(self.lambda_d_real) + ","\
-        + "lambda_d_fake: " + str(self.lambda_d_fake) + ","\
-        + "lambda_g_fake: " + str(self.lambda_g_fake) + ","\
-        + "lambda_giou: " + str(self.lambda_giou)+"\n"
-        with open("./parameters/" + "parameters.file", "a+") as f:
-            f.write(value)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -245,13 +214,6 @@ if __name__ == "__main__":
     parser.add_argument('--d_iter', type=int, default= "Default 5")
     parser.add_argument('--dicom_Height',type = int, default=256)
     parser.add_argument('--dicom_Width',type = int, default=256)
-    parser.add_argument('--lambda_gp', type = float, default = 10) #Default is 10.0
-    parser.add_argument('--lambda_d_real', type = float, default=1.0) #Default is 1.0
-    parser.add_argument('--lambda_d_fake', type = float, default = 1.0) #Default is 1.0
-    parser.add_argument('--lambda_g_fake', type = float, default = 1e-1) #Default is 0.1
-    parser.add_argument('--lambda_mse', type = float, default = 1.0) #Default is 1.0
-    parser.add_argument('--lambda_vgg', type = float, default = 1e-1) #Default is 0.1
-    parser.add_argument('--lambda_giou', type = float, default = 10.0) #Default is 10.0
 
     args = parser.parse_args()
 
