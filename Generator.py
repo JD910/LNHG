@@ -109,40 +109,38 @@ def giou_loss(self,fake,real):
     giou_batch = torch.zeros(1, fake.shape[0], requires_grad=True)
     Threshold_batch = torch.zeros(1, fake.shape[0])
     C_domain_batch = torch.zeros(1, fake.shape[0])
-    Dice_batch = torch.zeros(1, fake.shape[0])
 
     for i in range(fake.shape[0]): 
         fake_img_i = fake[i].clone()
         real_img_i = real[i].clone()
-        with torch.no_grad():
-            Box_gt = torch.zeros([1, 4])
+        Box_gt = torch.zeros([1, 4])
 
-            fake_GIoU = fake_img_i.squeeze()
-            fake_GIoU[:, :] = (fake_GIoU[:, :] - torch.min(fake_GIoU[:, :])) / \
-                                (torch.max(fake_GIoU[:, :]) -
-                                torch.min(fake_GIoU[:, :]))
-            real_GIoU = real_img_i.squeeze()
-            points = torch.nonzero(real_GIoU)
-            Box_gt = torch.Tensor([min(points[:, 0]), min(
-                points[:, 1]), max(points[:, 0]), max(points[:, 1])]).cuda()
+        fake_GIoU = fake_img_i.squeeze()
+        fake_GIoU[:, :] = (fake_GIoU[:, :] - torch.min(fake_GIoU[:, :])) / \
+                            (torch.max(fake_GIoU[:, :]) -
+                            torch.min(fake_GIoU[:, :]))
+        real_GIoU = real_img_i.squeeze()
+        points = torch.nonzero(real_GIoU)
+        Box_gt = torch.Tensor([min(points[:, 0]), min(
+            points[:, 1]), max(points[:, 0]), max(points[:, 1])]).cuda()
 
-            Threshold = 'Please select your best Threshold for your own dataset' ## the rage of 0.15~0.20 is best based on our training
-            MaxGIoU = -1.0
-            MaxDice = -1.0
-            while (Threshold != 0):
+        Threshold = 'Please select your best Threshold for your own dataset' ## the rage of 0.15~0.20 is best based on our training
+        MaxGIoU = -1.0
+        MaxDice = -1.0
+        while (Threshold != 0):
 
-                MaskImg = torch.where(fake_GIoU > Threshold, torch.full_like(
-                        fake_GIoU, 1), torch.full_like(fake_GIoU, 0))
-                max_giou, max_dice = self.Max_GIoU_calculate(
-                        i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,giou_batch,\
-                            C_domain_batch,real_GIoU,Dice_batch,MaxDice)
-                MaxGIoU = max_giou
-                MaxDice =max_dice
+            MaskImg = torch.where(fake_GIoU > Threshold, torch.full_like(
+                    fake_GIoU, 1), torch.full_like(fake_GIoU, 0))
+            max_giou, max_dice = self.Max_GIoU_calculate(
+                    i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,giou_batch,\
+                        C_domain_batch,real_GIoU,MaxDice)
+            MaxGIoU = max_giou
+            MaxDice =max_dice
 
     loss_giou = 1 - giou_batch
     return loss_giou.cuda()
 
-def Max_GIoU_calculate(self,i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,giou_batch,C_domain_batch,real_GIoU,Dice_batch,MaxDice):
+def Max_GIoU_calculate(self,i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,giou_batch,C_domain_batch,real_GIoU,MaxDice):
 
         labels = skimage.measure.label(MaskImg.cpu())  
         num = labels.max() 
@@ -157,9 +155,7 @@ def Max_GIoU_calculate(self,i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,g
             Box_p = torch.Tensor([min(points[:, 0]), min(points[:,1]), max(points[:,0]), max(points[:,1])]).cuda()
            
             dice = dice_coeff(out, real_GIoU)
-            if (dice > MaxDice):
-                MaxDice = dice
-                Dice_batch[0,i] = dice
+
             assert Box_p.shape == Box_gt.shape
             Box_p = Box_p.float()
             Box_gt = Box_gt.float()
@@ -197,9 +193,9 @@ def Max_GIoU_calculate(self,i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,g
 
             if(iou > MaxGIoU):  
                     MaxGIoU = iou
-                    Threshold_batch[0, i] = Threshold 
-                    giou_batch[0, i] = giou 
-                    C_domain_batch[0, i] = box_gt_area
+                    Threshold_batch[0, i].data.fill_(Threshold)
+                    giou_batch[0, i].data.fill_(giou)
+                    C_domain_batch[0, i].data.fill_(box_gt_area)
         
         return MaxGIoU, MaxDice
 
