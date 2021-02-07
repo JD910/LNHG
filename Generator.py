@@ -100,13 +100,6 @@ class GIoU(nn.Module):
 
     
     def forward(self,fake_img,real_img):
-        """
-        Input:
-            Box_p : (n,4)(x1,y,x2,y2),
-            Box_gt: (n,4)(x1,y1,x2,y2)
-        Output:
-            loss_giou
-        """
         loss = giou_loss(fake_img,real_img)
         return loss
 
