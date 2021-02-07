@@ -91,8 +91,9 @@ class Train_Loss(nn.Module):
         
         Mse_loss = self.criterion_loss(fake_img.float(), real_img.float())
         VGG19_loss = VGG_Loss(self,fake_img, real_img)
-        G_loss = self.giouloss(fake_img,real_img)
-        return G_loss.mean() + Mse_loss + VGG19_loss
+        GIoU_loss = self.giouloss(fake_img,real_img)
+        G_Loss = GIoU_loss[0].mean() + Mse_loss + VGG19_loss
+        return G_Loss
 
 class GIoU(nn.Module):
     def __init__(self):
@@ -100,42 +101,43 @@ class GIoU(nn.Module):
 
     
     def forward(self,fake_img,real_img):
-        loss = giou_loss(fake_img,real_img)
+        loss = giou_loss(self,fake_img,real_img)
         return loss
 
-def giou_loss(fake,real):
+def giou_loss(self,fake,real):
     
-    giou_batch = torch.zeros(1, fake.shape[0])
+    giou_batch = torch.zeros(1, fake.shape[0], requires_grad=True)
     Threshold_batch = torch.zeros(1, fake.shape[0])
     C_domain_batch = torch.zeros(1, fake.shape[0])
     Dice_batch = torch.zeros(1, fake.shape[0])
 
     for i in range(fake.shape[0]): 
-        fake_img_i = fake[i].clone().detach()
-        real_img_i = real[i].clone().detach()
-        Box_gt = torch.zeros([1, 4])
+        fake_img_i = fake[i].clone()
+        real_img_i = real[i].clone()
+        with torch.no_grad():
+            Box_gt = torch.zeros([1, 4])
 
-        fake_GIoU = fake_img_i.squeeze()
-        fake_GIoU[:, :] = (fake_GIoU[:, :] - torch.min(fake_GIoU[:, :])) / \
-                            (torch.max(fake_GIoU[:, :]) -
-                            torch.min(fake_GIoU[:, :]))
-        real_GIoU = real_img_i.squeeze()
-        points = torch.nonzero(real_GIoU)
-        Box_gt = torch.Tensor([min(points[:, 0]), min(
-            points[:, 1]), max(points[:, 0]), max(points[:, 1])]).cuda()
+            fake_GIoU = fake_img_i.squeeze()
+            fake_GIoU[:, :] = (fake_GIoU[:, :] - torch.min(fake_GIoU[:, :])) / \
+                                (torch.max(fake_GIoU[:, :]) -
+                                torch.min(fake_GIoU[:, :]))
+            real_GIoU = real_img_i.squeeze()
+            points = torch.nonzero(real_GIoU)
+            Box_gt = torch.Tensor([min(points[:, 0]), min(
+                points[:, 1]), max(points[:, 0]), max(points[:, 1])]).cuda()
 
-        Threshold = 'Please select your best Threshold for your own dataset' ## the rage of 0.15~0.20 is best based on our training
-        MaxGIoU = -1.0
-        MaxDice = -1.0
-        while (Threshold != 0):
+            Threshold = 'Please select your best Threshold for your own dataset' ## the rage of 0.15~0.20 is best based on our training
+            MaxGIoU = -1.0
+            MaxDice = -1.0
+            while (Threshold != 0):
 
-            MaskImg = torch.where(fake_GIoU > Threshold, torch.full_like(
-                    fake_GIoU, 1), torch.full_like(fake_GIoU, 0))
-            max_giou, max_dice = self.Max_GIoU_calculate(
-                    i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,giou_batch,\
-                        C_domain_batch,real_GIoU,Dice_batch,MaxDice)
-            MaxGIoU = max_giou
-            MaxDice =max_dice
+                MaskImg = torch.where(fake_GIoU > Threshold, torch.full_like(
+                        fake_GIoU, 1), torch.full_like(fake_GIoU, 0))
+                max_giou, max_dice = self.Max_GIoU_calculate(
+                        i,MaskImg,Box_gt,Threshold,MaxGIoU,Threshold_batch,giou_batch,\
+                            C_domain_batch,real_GIoU,Dice_batch,MaxDice)
+                MaxGIoU = max_giou
+                MaxDice =max_dice
 
     loss_giou = 1 - giou_batch
     return loss_giou.cuda()
