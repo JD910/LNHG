@@ -92,7 +92,7 @@ class Train_Loss(nn.Module):
         Mse_loss = self.criterion_loss(fake_img.float(), real_img.float())
         VGG19_loss = VGG_Loss(self,fake_img, real_img)
         GIoU_loss = self.giouloss(fake_img,real_img)
-        G_Loss = GIoU_loss[0].mean() + Mse_loss + VGG19_loss
+        G_Loss = GIoU_loss.mean() + Mse_loss + VGG19_loss
         return G_Loss
 
 class GIoU(nn.Module):
