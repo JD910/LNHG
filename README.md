@@ -1,22 +1,22 @@
-# SJ-WL_For_Lung_Nodule_Seg
-This is the repository for the code of the SJ-WL model for lung nodule segmentation.
+# SJ-WL model For end-to-end lung nodule detection and segmentation
+https://img.shields.io/badge/{徽标标题}-{徽标内容}-{徽标颜色}.svg
+[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-* The ModelWGANGP.py file is used to start your training. It will automatically call other functions. All files are described as follows.
+This is the repository of the SJ-WL model for lung nodule detection and segmentation.
 
-* ModelWGANGP.py: Start your training.
+< img src="https://github.com/JD910/SJ-WL/blob/main/Segmentation/Images/Fig2-New.tif" width="150" height="150" alt="Flowchat load fail"/>
 
-* HDF5_Read.py: Each time  image files of batch size is read. 
+## Detection module using Faster RCNN with GIoU loss for nodule candidates detection.
+### **Input:  Original CT images (H, W)**
+### **Output: CT images of nodule candidates (H, W)**
 
-* VGG19: VGG feature extraction and loss function.
+### * train.py is used to start the training and validation.
+### Refer to: <https://github.com/bubbliiiing/faster-rcnn-pytorch> <br/>
 
-* Weight_Init: Initialization of the network parameters.
+## Segmentation module using WGAN-GP for nodule region generation, and refinement.
 
-* Train_Disc: Training details of the discriminator.
+### **Input: Volumes consisted of continuous images of the same nodule (Channel, Depth, H, W)**
+### **Output: Volumes of lung nodule images (Channel, Depth, H, W)**
+### * Train.py is used to start the training and validation of the proposed SJ-WL model.
+### * Unet_Comparison.py is the model of the U-net for comaprison.
 
-* Discriminator: Discriminator network of the model.
-
-* Generator: Geneartor network of the model and G_loss calculation.
-
-* Unet_Comparison: U-net for the comparison of segmentation accuracy.
-
-* Data augmentation details.
