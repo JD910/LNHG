@@ -21,7 +21,7 @@ from Weight_Init import *
 from Train_Disc import *
 from Train_Gene import *
 
-class JSLWGAN_GIoU:
+class SJ_WL:
     def __init__(self, args):
         self.lr = args.learning_rate
         self.epoch = args.epoch
@@ -177,5 +177,5 @@ if __name__ == "__main__":
     parser.add_argument('--lambda_vgg', type = float, default = 1.0)
 
     args = parser.parse_args()
-    mwgan = JSLWGAN_GIoU(args)
+    mwgan = SJ_WL(args)
     mwgan.train(args)
