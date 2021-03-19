@@ -1,3 +1,0 @@
-./Your data path (original CT images)/LIDC_2581_57.jpg 201,307,226,330,0
-./Your data path (original CT images)/LIDC_0194_92.jpg 156,224,180,255,0
-./Your data path (original CT images)/LIDC_0964_85.5.jpg 153,179,158,185,0
