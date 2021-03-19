@@ -36,37 +36,23 @@ class ProposalCreator():
         anchor = torch.from_numpy(anchor)
         if loc.is_cuda:
             anchor = anchor.cuda()
-        #-----------------------------------#
-        #   将RPN网络预测结果转化成建议框
-        #-----------------------------------#
+
         roi = loc2bbox(anchor, loc)
 
-        #-----------------------------------#
-        #   防止建议框超出图像边缘
-        #-----------------------------------#
         roi[:, [0, 2]] = torch.clamp(roi[:, [0, 2]], min = 0, max = img_size[1])
         roi[:, [1, 3]] = torch.clamp(roi[:, [1, 3]], min = 0, max = img_size[0])
         
-        #-----------------------------------#
-        #   建议框的宽高的最小值不可以小于16
-        #-----------------------------------#
         min_size = self.min_size * scale
         keep = torch.where(((roi[:, 2] - roi[:, 0]) >= min_size) & ((roi[:, 3] - roi[:, 1]) >= min_size))[0]
         roi = roi[keep, :]
         score = score[keep]
 
-        #-----------------------------------#
-        #   根据得分进行排序，取出建议框
-        #-----------------------------------#
         order = torch.argsort(score, descending=True)
         if n_pre_nms > 0:
             order = order[:n_pre_nms]
         roi = roi[order, :]
         score = score[order]
 
-        #-----------------------------------#
-        #   对建议框进行非极大抑制
-        #-----------------------------------#
         keep = nms(roi, score, self.nms_thresh)
         keep = keep[:n_post_nms]
         roi = roi[keep]
@@ -82,60 +68,35 @@ class RegionProposalNetwork(nn.Module):
         super(RegionProposalNetwork, self).__init__()
         self.feat_stride = feat_stride
         self.proposal_layer = ProposalCreator(mode)
-        #-----------------------------------------#
-        #   生成基础先验框，shape为[9, 4]
-        #-----------------------------------------#
+
         self.anchor_base = generate_anchor_base(anchor_scales=anchor_scales, ratios=ratios)
         n_anchor = self.anchor_base.shape[0]
 
-        #-----------------------------------------#
-        #   先进行一个3x3的卷积，可理解为特征整合
-        #-----------------------------------------#
         self.conv1 = nn.Conv2d(in_channels, mid_channels, 3, 1, 1)
-        #-----------------------------------------#
-        #   分类预测先验框内部是否包含物体
-        #-----------------------------------------#
+
         self.score = nn.Conv2d(mid_channels, n_anchor * 2, 1, 1, 0)
-        #-----------------------------------------#
-        #   回归预测对先验框进行调整
-        #-----------------------------------------#
+
         self.loc = nn.Conv2d(mid_channels, n_anchor * 4, 1, 1, 0)
 
-        #--------------------------------------#
-        #   对FPN的网络部分进行权值初始化
-        #--------------------------------------#
         normal_init(self.conv1, 0, 0.01)
         normal_init(self.score, 0, 0.01)
         normal_init(self.loc, 0, 0.01)
 
     def forward(self, x, img_size, scale=1.):
         n, _, h, w = x.shape
-        #-----------------------------------------#
-        #   先进行一个3x3的卷积，可理解为特征整合
-        #-----------------------------------------#
+
         x = F.relu(self.conv1(x))
-        #-----------------------------------------#
-        #   回归预测对先验框进行调整
-        #-----------------------------------------#
+
         rpn_locs = self.loc(x)
         rpn_locs = rpn_locs.permute(0, 2, 3, 1).contiguous().view(n, -1, 4)
-        #-----------------------------------------#
-        #   分类预测先验框内部是否包含物体
-        #-----------------------------------------#
+
         rpn_scores = self.score(x)
         rpn_scores = rpn_scores.permute(0, 2, 3, 1).contiguous().view(n, -1, 2)
         
-        #--------------------------------------------------------------------------------------#
-        #   进行softmax概率计算，每个先验框只有两个判别结果
-        #   内部包含物体或者内部不包含物体，rpn_softmax_scores[:, :, 1]的内容为包含物体的概率
-        #--------------------------------------------------------------------------------------#
         rpn_softmax_scores = F.softmax(rpn_scores, dim=-1)
         rpn_fg_scores = rpn_softmax_scores[:, :, 1].contiguous()
         rpn_fg_scores = rpn_fg_scores.view(n, -1)
 
-        #------------------------------------------------------------------------------------------------#
-        #   生成先验框，此时获得的anchor是布满网格点的，当输入图片为600,600,3的时候，shape为(12996, 4)
-        #------------------------------------------------------------------------------------------------#
         anchor = _enumerate_shifted_anchor(np.array(self.anchor_base), self.feat_stride, h, w)
         
         rois = list()
