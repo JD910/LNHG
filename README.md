@@ -1,10 +1,11 @@
-# SJ-WL model For end-to-end lung nodule detection and segmentation
-https://img.shields.io/badge/{徽标标题}-{徽标内容}-{徽标颜色}.svg
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+# SJ-WL model for end-to-end lung nodule detection and segmentation
+
+[![standard-readme compliant](https://img.shields.io/badge/Readme-standard-brightgreen.svg?style=flat-square)](https://github.com/JD910/SJ-WL/blob/main/README.md)
+[](https://img.shields.io/badge/Pytorch-1.7.1-brightgreen.svg?style=flat-square)](https://github.com/JD910/SJ-WL)
 
 This is the repository of the SJ-WL model for lung nodule detection and segmentation.
 
-< img src="https://github.com/JD910/SJ-WL/blob/main/Segmentation/Images/Fig2-New.tif" width="150" height="150" alt="Flowchat load fail"/>
+< img src="https://github.com/JD910/SJ-WL/blob/main/Segmentation/Images/Fig2-New.jpg" width="150" height="150" alt="Flowchat"/>
 
 ## Detection module using Faster RCNN with GIoU loss for nodule candidates detection.
 ### **Input:  Original CT images (H, W)**
