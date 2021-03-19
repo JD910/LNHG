@@ -1,20 +1,8 @@
-#----------------------------------------------------#
-#   获取测试集的ground-truth
-#   具体视频教程可查看
-#   https://www.bilibili.com/video/BV1zE411u7Vw
-#----------------------------------------------------#
 import glob
 import os
 import sys
 import xml.etree.ElementTree as ET
 
-'''
-！！！！！！！！！！！！！注意事项！！！！！！！！！！！！！
-# 这一部分是当xml有无关的类的时候，下方有代码可以进行筛选！
-'''
-#---------------------------------------------------#
-#   获得类
-#---------------------------------------------------#
 def get_classes(classes_path):
     '''loads the classes'''
     with open(classes_path) as f:
@@ -39,15 +27,6 @@ for image_id in image_ids:
                 if int(difficult)==1:
                     difficult_flag = True
             obj_name = obj.find('name').text
-            '''
-            ！！！！！！！！！！！！注意事项！！！！！！！！！！！！
-            # 这一部分是当xml有无关的类的时候，可以取消下面代码的注释
-            # 利用对应的classes.txt来进行筛选！！！！！！！！！！！！
-            '''
-            # classes_path = 'model_data/voc_classes.txt'
-            # class_names = get_classes(classes_path)
-            # if obj_name not in class_names:
-            #     continue
 
             bndbox = obj.find('bndbox')
             left = bndbox.find('xmin').text
