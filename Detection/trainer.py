@@ -109,43 +109,62 @@ class FasterRCNNTrainer(nn.Module):
         self.optimizer.step()
         return losses
 
-def _smooth_l1_loss(x, t, bbox, get_pre_anchor, sigma):
+def _smooth_l1_loss(pred_loc, gt_loc, bbox, get_pre_anchor, sigma, eps = 1e-7):
+
     '''
-    Change it to GIoU loss 
-    The comments below is the calculation process of smooth L1 loss.
+    sigma_squared = sigma ** 2
+    regression_diff = (pred_loc - gt_loc)
+    regression_diff = regression_diff.abs()
+    regression_loss = torch.where(
+             regression_diff < (1. / sigma_squared),
+             0.5 * sigma_squared * regression_diff ** 2,
+             regression_diff - 0.5 / sigma_squared
+         )
+    return regression_loss.sum()
     '''
-    
-    # sigma_squared = sigma ** 2
-    # regression_diff = (x - t)
-    # regression_diff = regression_diff.abs()
-    # regression_loss = torch.where(
-    #         regression_diff < (1. / sigma_squared),
-    #         0.5 * sigma_squared * regression_diff ** 2,
-    #         regression_diff - 0.5 / sigma_squared
-    #     )
-    # return regression_loss.sum()
 
-    bbox_a = get_pre_anchor
-    bbox_b = bbox
-    tl = torch.max(bbox_a[:, None, :2], bbox_b[:, :2])
-    br = torch.min(bbox_a[:, None, 2:], bbox_b[:, 2:])
-    area_i = torch.prod(br - tl, axis=2) * (tl < br).all(axis=2)
-    area_a = torch.prod(bbox_a[:, 2:] - bbox_a[:, :2], 1, True)
-    area_b = torch.prod(bbox_b[:, 2:] - bbox_b[:, :2], 1, True)
-    union = (area_a[:, None] + area_b - area_i[:,:, None]).squeeze()
-    iou = area_i / union
 
-    # GIoU
-    tl_c = torch.min(bbox_a[:, None, :2], bbox_b[:, :2])
-    br_c = torch.max(bbox_a[:, None, 2:], bbox_b[:, 2:])
-    area_c = torch.prod(br_c - tl_c, axis=2) * (tl_c < br_c).all(axis=2)
-    
-    giou = iou - (area_c - union) / area_c
+    '''
+    https://github.com/sfzhang15/ATSS/blob/master/atss_core/modeling/rpn/atss/loss.py#L36
+    :param preds:[[x1,y1,x2,y2], [x1,y1,x2,y2],,,]
+    :param bbox:[[x1,y1,x2,y2], [x1,y1,x2,y2],,,]
+    :return: GIoU loss
+    '''
+    ix1 = torch.max(pred_loc[:, 0], gt_loc[:, 0])
+    iy1 = torch.max(pred_loc[:, 1], gt_loc[:, 1])
+    ix2 = torch.min(pred_loc[:, 2], gt_loc[:, 2])
+    iy2 = torch.min(pred_loc[:, 3], gt_loc[:, 3])
 
-    loss_giou = 1.0 - giou
+    iw = (ix2 - ix1 + 1.0).clamp(0.)
+    ih = (iy2 - iy1 + 1.0).clamp(0.)
 
-    return loss_giou
+    # overlap
+    inters = iw * ih
 
+    # union
+    uni = (pred_loc[:, 2] - pred_loc[:, 0] + 1.0) * (pred_loc[:, 3] - pred_loc[:, 1] + 1.0) + (gt_loc[:, 2] - gt_loc[:, 0] + 1.0) * (
+            gt_loc[:, 3] - gt_loc[:, 1] + 1.0) - inters + eps
+
+    # ious
+    ious = inters / uni
+
+    ex1 = torch.min(pred_loc[:, 0], gt_loc[:, 0])
+    ey1 = torch.min(pred_loc[:, 1], gt_loc[:, 1])
+    ex2 = torch.max(pred_loc[:, 2], gt_loc[:, 2])
+    ey2 = torch.max(pred_loc[:, 3], gt_loc[:, 3])
+    ew = (ex2 - ex1 + 1.0).clamp(min=0.)
+    eh = (ey2 - ey1 + 1.0).clamp(min=0.)
+
+    # enclose erea
+    enclose = ew * eh + eps
+
+    giou = ious - (enclose - uni) / enclose
+
+    loss = 1 - giou
+
+    loss = torch.sum(loss)
+
+    return loss
 
 def _fast_rcnn_loc_loss(pred_loc, gt_loc, gt_label, bbox, get_pre_anchor, sigma):
     pred_loc = pred_loc[gt_label>0]
