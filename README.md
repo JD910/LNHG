@@ -5,9 +5,9 @@
 
 This is the repository of the SJ-WL model for lung nodule detection and segmentation.
 
-![Flowchart](https://github.com/JD910/SJ-WL/blob/main/Segmentation/Images/Fig2-New.jpg)
+<div align=center><img width="600" height="240" src="https://github.com/JD910/SJ-WL/blob/main/Segmentation/Images/Fig2-New.jpg"/></div><br />
 
-## Detection module using Faster RCNN with GIoU loss for nodule candidates detection.
+## Detection module using Faster RCNN with GIoU loss for nodule candidates detection.<br />
 ### 
 **Input:  Original CT images (H, W)**<br />
 **Output: CT images of nodule candidates (H, W)**<br />
