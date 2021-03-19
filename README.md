@@ -12,7 +12,7 @@ This is the repository of the SJ-WL model for end-to-end lung nodule detection a
 **Input:  Original CT images (H, W)**<br />
 **Output: CT images of corresponding nodule candidates (H, W)**<br />
 
-* train.py is used to start the training and validation.<br />
+* train.py is used to start the training and validation of the Faster RCNN model.<br />
 * The [```_smooth_l1_loss()```](https://github.com/JD910/SJ-WL/blob/main/Detection/trainer.py#L112) function is directly modified to use GIoU loss to calculate the location loss for easy understanding. <br/>
 
 ## Segmentation module using WGAN-GP for lung nodules generation, intra-nodular heterogeneity production, and nodule candidates refinement.
@@ -20,6 +20,6 @@ This is the repository of the SJ-WL model for end-to-end lung nodule detection a
 ### 
 **Input: Volumes consisted of continuous images of the same nodule (Channel, Depth, H, W)**<br />
 **Output: Volumes of the corresponding lung nodule images (Channel, Depth, H, W)**<br />
-* Train.py is used to start the training and validation of the proposed SJ-WL model.<br />
-* Unet_Comparison.py is the model of the U-net for comaprison.
+* Train.py is used to start the training and validation of the WGAN-GP model.<br />
+* Unet_Comparison.py is the model of the U-net for comparison.
 
