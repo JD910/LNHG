@@ -15,14 +15,6 @@ from torch.nn import functional as F
 from nets.frcnn import FasterRCNN
 from utils.utils import DecodeBox, get_new_img_size, loc2bbox, nms
 
-
-#--------------------------------------------#
-#   使用自己训练好的模型预测需要修改2个参数
-#   model_path和classes_path都需要修改！
-#   如果出现shape不匹配
-#   一定要注意训练时的NUM_CLASSES、
-#   model_path和classes_path参数的修改
-#--------------------------------------------#
 class FRCNN(object):
     _defaults = {
         "model_path"    : 'logs/Epoch100-Total_Loss0.8940-Val_Loss0.8215.pth',
@@ -40,9 +32,6 @@ class FRCNN(object):
         else:
             return "Unrecognized attribute name '" + n + "'"
 
-    #---------------------------------------------------#
-    #   初始化faster RCNN
-    #---------------------------------------------------#
     def __init__(self, **kwargs):
         self.__dict__.update(self._defaults)
         self.class_names = self._get_class()
@@ -56,9 +45,6 @@ class FRCNN(object):
             
         self.decodebox = DecodeBox(self.std, self.mean, self.num_classes)
 
-    #---------------------------------------------------#
-    #   获得所有的分类
-    #---------------------------------------------------#
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
         with open(classes_path) as f:
@@ -66,18 +52,10 @@ class FRCNN(object):
         class_names = [c.strip() for c in class_names]
         return class_names
 
-    #---------------------------------------------------#
-    #   载入模型
-    #---------------------------------------------------#
     def generate(self):
-        #-------------------------------#
-        #   计算总的类的数量
-        #-------------------------------#
+
         self.num_classes = len(self.class_names)
 
-        #-------------------------------#
-        #   载入模型与权值
-        #-------------------------------#
         self.model = FasterRCNN(self.num_classes,"predict",backbone=self.backbone).eval()
         print('Loading weights into state dict...')
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -91,7 +69,6 @@ class FRCNN(object):
 
         print('{} model, anchors, and classes loaded.'.format(self.model_path))
 
-        # 画框设置不同的颜色
         hsv_tuples = [(x / len(self.class_names), 1., 1.)
                       for x in range(len(self.class_names))]
         self.colors = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
@@ -99,23 +76,14 @@ class FRCNN(object):
             map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)),
                 self.colors))
     
-    #---------------------------------------------------#
-    #   检测图片
-    #---------------------------------------------------#
     def detect_image(self, image):
         image_shape = np.array(np.shape(image)[0:2])
         old_width, old_height = image_shape[1], image_shape[0]
         old_image = copy.deepcopy(image)
         
-        #---------------------------------------------------------#
-        #   给原图像进行resize，resize到短边为600的大小上
-        #---------------------------------------------------------#
         width,height = get_new_img_size(old_width, old_height)
         image = image.resize([width,height], Image.BICUBIC)
 
-        #-----------------------------------------------------------#
-        #   图片预处理，归一化。
-        #-----------------------------------------------------------#
         photo = np.transpose(np.array(image,dtype = np.float32)/255, (2, 0, 1))
 
         with torch.no_grad():
@@ -124,13 +92,9 @@ class FRCNN(object):
                 images = images.cuda()
 
             roi_cls_locs, roi_scores, rois, _ = self.model(images)
-            #-------------------------------------------------------------#
-            #   利用classifier的预测结果对建议框进行解码，获得预测框
-            #-------------------------------------------------------------#
+
             outputs = self.decodebox.forward(roi_cls_locs[0], roi_scores[0], rois, height = height, width = width, nms_iou = self.iou, score_thresh = self.confidence)
-            #---------------------------------------------------------#
-            #   如果没有检测出物体，返回原图
-            #---------------------------------------------------------#
+
             if len(outputs)==0:
                 return old_image
             outputs = np.array(outputs)
@@ -140,11 +104,7 @@ class FRCNN(object):
 
             bbox[:, 0::2] = (bbox[:, 0::2]) / width * old_width
             bbox[:, 1::2] = (bbox[:, 1::2]) / height * old_height
-
-        #font = ImageFont.truetype(font='model_data/simhei.ttf',size=np.floor(3e-2 * np.shape(image)[1] + 0.5).astype('int32'))
-
-        #thickness = min((np.shape(old_image)[0] + np.shape(old_image)[1]) // old_width * 2, 1)
-                
+      
         image = old_image
         image_C = np.zeros((np.shape(image)[0], np.shape(image)[1], 3), dtype=np.uint8)
         image_C = cv2.cvtColor(image_C, cv2.COLOR_RGB2GRAY)
@@ -170,33 +130,9 @@ class FRCNN(object):
             image1 = cv2.fillConvexPoly(image_Temp, points_ROI, (255, 255, 255))
             img_gray_roi_mask_triangle = cv2.cvtColor(image1, cv2.COLOR_RGB2GRAY)
 
-            #灰度化后的图转化为白色255
             img_gray_roi_mask_triangle[img_gray_roi_mask_triangle > 0] = 255
             image_C = cv2.bitwise_or(image_C, img_gray_roi_mask_triangle)
 
-            # 画框框
-            '''
-            label = '{} {:.2f}'.format(predicted_class, score)
-            draw = ImageDraw.Draw(image)
-            label_size = draw.textsize(label, font)
-            label = label.encode('utf-8')
-            print(label, top, left, bottom, right)
-            
-            if top - label_size[1] >= 0:
-                text_origin = np.array([left, top - label_size[1]])
-            else:
-                text_origin = np.array([left, top + 1])
-
-            for i in range(thickness):
-                draw.rectangle(
-                    [left + i, top + i, right - i, bottom - i],
-                    outline=self.colors[int(c)])
-            draw.rectangle(
-                [tuple(text_origin), tuple(text_origin + label_size)],
-                fill=self.colors[int(c)])
-            draw.text(text_origin, str(label,'UTF-8'), fill=(0, 0, 0), font=font)
-            del draw
-            '''
         image = np.array(image)
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY) 
         image = np.where(image_C > 0, image,image_C)
