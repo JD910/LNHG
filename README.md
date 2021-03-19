@@ -1,9 +1,9 @@
-# SJ-WL model for end-to-end lung nodule detection and segmentation
+# SJ-WL model for lung nodule detection and segmentation
 
 [![standard-readme compliant](https://img.shields.io/badge/Readme-standard-brightgreen.svg?style=flat-square)](https://github.com/JD910/SJ-WL/blob/main/README.md)
 ![](https://img.shields.io/badge/Pytorch-1.7.1-brightgreen.svg?style=flat-square)
 
-This is the repository of the SJ-WL model for lung nodule detection and segmentation.
+This is the repository of the SJ-WL model for end-to-end lung nodule detection and segmentation.
 
 <div align=left><img width="600" height="240" src="https://github.com/JD910/SJ-WL/blob/main/Segmentation/Images/Fig2-New.jpg"/></div><br />
 
@@ -15,7 +15,7 @@ This is the repository of the SJ-WL model for lung nodule detection and segmenta
 * train.py is used to start the training and validation.<br />
 * Refer to: <https://github.com/bubbliiiing/faster-rcnn-pytorch> <br/>
 
-## Segmentation module using WGAN-GP for nodule region generation, and refinement.
+## Segmentation module using WGAN-GP for lung nodules generation, intra-nodular heterogeneity production, and nodule candidates refinement.
 
 ### 
 **Input: Volumes consisted of continuous images of the same nodule (Channel, Depth, H, W)**<br />
