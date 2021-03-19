@@ -10,8 +10,7 @@ import sys
 import numpy as np
 
 #----------------------------------------------------#
-#   用于计算mAP
-#   代码克隆自https://github.com/Cartucho/mAP
+#  Refer to: https://github.com/Cartucho/mAP
 #----------------------------------------------------#
 MINOVERLAP = 0.5 # default value (defined in the PASCAL VOC2012 challenge)
 
