@@ -112,6 +112,7 @@ class FasterRCNNTrainer(nn.Module):
 def _smooth_l1_loss(pred_loc, gt_loc, bbox, get_pre_anchor, sigma, eps = 1e-7):
 
     '''
+    # compute smooth l1 loss
     sigma_squared = sigma ** 2
     regression_diff = (pred_loc - gt_loc)
     regression_diff = regression_diff.abs()
@@ -122,6 +123,7 @@ def _smooth_l1_loss(pred_loc, gt_loc, bbox, get_pre_anchor, sigma, eps = 1e-7):
          )
     return regression_loss.sum()
     '''
+    
     # compute giou loss
     bbox_p = pred_loc
     bbox_g = gt_loc
