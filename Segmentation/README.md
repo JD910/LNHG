@@ -1,13 +1,12 @@
-# SJ-WL_For_Lung_Nodule_Seg
-This is the repository for the code of the SJ-WL model (2D) for lung nodule segmentation.
+# SJ-WL For Lung Nodule Segmentation and Intra-nodular hetegogeneity production.
 
-* The ModelWGANGP.py file is used to start your training. It will automatically call other files. All files are described as follows.
+* The Train.py file is used to start your training. It will automatically call other files. All files are described as follows.
 
-* ModelWGANGP.py: Start your training.
+* Train.py: Start your training.
 
 * HDF5_Read.py: Each time image files of batch size is read. 
 
-* VGG19: VGG feature extraction and loss function.
+* VGG19: VGG feature extraction.
 
 * Weight_Init: Initialization of the network parameters.
 
@@ -15,7 +14,9 @@ This is the repository for the code of the SJ-WL model (2D) for lung nodule segm
 
 * Discriminator: Discriminator network of the model.
 
-* Generator: Geneartor network of the model and G_loss calculation.
+* Train_Gene: Training details of the generator.
+
+* Generator: Geneartor network of the model.
 
 * Unet_Comparison: U-net for the comparison of segmentation accuracy.
 
