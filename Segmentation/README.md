@@ -1,10 +1,10 @@
-# SJ-WL For Lung Nodule Segmentation and Intra-nodular hetegogeneity production.
+# WGAN-GP branch For Lung Nodule Segmentation and Intra-nodular hetegogeneity production
 
 * The Train.py file is used to start your training. It will automatically call other files. All files are described as follows.
 
-* Train.py: Start your training.
+* Train: Start your training.
 
-* HDF5_Read.py: Each time image files of batch size is read. 
+* HDF5_Read: Each time image files of batch size is read. 
 
 * VGG19: VGG feature extraction.
 
