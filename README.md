@@ -13,7 +13,7 @@ This is the repository of the SJ-WL model for end-to-end lung nodule detection a
 **Output: CT images of corresponding nodule candidates (H, W)**<br />
 
 * train.py is used to start the training and validation of the Faster R-CNN branch.<br />
-* The [```_smooth_l1_loss()```](https://github.com/JD910/SJ-WL/blob/main/Detection/trainer.py#L112) and the GIoU loss are provided in the same function to calculate the location loss for easy understanding. <br/>
+* The [```_smooth_l1_loss()```](https://github.com/JD910/SJ-WL/blob/main/Detection/trainer.py#L112) and the GIoU loss are provided in the same function to calculate the location loss for better understanding. <br/>
 
 ## Segmentation branch using WGAN-GP for lung nodule segmentation and intra-nodular heterogeneity production
 
