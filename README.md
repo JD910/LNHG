@@ -1,11 +1,11 @@
-# ESLN model for lung nodule detection and segmentation
+# LNHG model for lung nodule detection and segmentation
 
-[![standard-readme compliant](https://img.shields.io/badge/Readme-standard-brightgreen.svg?style=flat-square)](https://github.com/JD910/ESLN/blob/main/README.md)
+[![standard-readme compliant](https://img.shields.io/badge/Readme-standard-brightgreen.svg?style=flat-square)](https://github.com/JD910/LNHG/blob/main/README.md)
 ![](https://img.shields.io/badge/Pytorch-1.7.1-brightgreen.svg?style=flat-square)
 
-This is the repository of the ESLN model for end-to-end lung nodule detection and segmentation.
+This is the repository of the LNHG model for end-to-end lung nodule detection and segmentation.
 
-<div align=left><img width="610" height="300" src="https://github.com/JD910/ESLN/blob/main/Segmentation/Images/Fig2-New.jpg"/></div><br />
+<div align=left><img width="610" height="300" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig2-New.jpg"/></div><br />
 
 ## Detection branch using Faster R-CNN with GIoU loss for nodule candidates detection<br />
 ### 
@@ -13,7 +13,7 @@ This is the repository of the ESLN model for end-to-end lung nodule detection an
 **Output: CT images of corresponding nodule candidates (H, W)**<br />
 
 * train.py is used to start the training and validation of the Faster R-CNN branch.<br />
-* The [```_smooth_l1_loss()```](https://github.com/JD910/ESLN/blob/main/Detection/trainer.py#L112) and the GIoU loss are provided in the same function to calculate the location loss for better understanding. <br/>
+* The [```_smooth_l1_loss()```](https://github.com/JD910/LNHG/blob/main/Detection/trainer.py#L112) and the GIoU loss are provided in the same function to calculate the location loss for better understanding. <br/>
 
 ## Segmentation branch using WGAN-GP for lung nodule segmentation and intra-nodular heterogeneity production
 
