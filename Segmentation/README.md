@@ -1,4 +1,4 @@
-# WGAN-GP branch for lung nodule segmentation and intra-nodular heterogeneity production
+# WGAN-GP branch for lung nodule segmentation and intra-nodular heterogeneity map production
 
 * The Train.py file is used to start your training. It will automatically call other files. All files are described as follows.
 
