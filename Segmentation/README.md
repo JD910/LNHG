@@ -21,3 +21,5 @@
 * Unet_Comparison: U-net for the comparison of segmentation accuracy.
 
 * Data augmentation details.
+
+* Heterogeneity_Rendering: Intra-nodular heterogeneity rendering on the LNHG output images.
