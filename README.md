@@ -25,18 +25,14 @@ This is the repository of *LNHG* model for end-to-end lung nodule segmentation a
 
 ### To explain the workflow of the proposed *LNHG* model more clearly, a detailed description of the procedure of lung nodule image generation is shown in Figs. S1–S3. The figures below elaborated the segmentation of lung nodules, production of the final lung nodule image, and intra-nodular heterogeneous conversion from the produced lung nodule image.
 
-## *Supplementary_F1*
+## *Supplementary_S1*
 <div align=left><img width="800" height="268" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig_F1.jpg"/></div><br />
 
 **Fig. F1. Explanation of the Workflow of the Proposed LNHG Model. The input is the original CT image, and *Block1–Block8* denote the network layers (with the same color) presented in Figure 3 in the manuscript. The feature map output by each block showed in the figure is the mean of all the feature maps.**<br />
 
-## *Supplementary_F2*
-
 <div align=left><img width="610" height="338" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig-github.jpg"/></div><br />
 
 **Fig. F2. Example illustrating how the final lung nodule image is produced based on the output of WGAN-GP and Faster R-CNN branches. The false-positive candidates produced by the WGAN-GP branch is marked in a red oval for better display. By fusing the output of the two branches, the false-positive candidates are eliminated, and the final lung nodule image is produced.**<br />
-
-## *Supplementary_F3*
 
 <div align=left><img width="358" height="380" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig_F3.jpg"/></div><br />
 
