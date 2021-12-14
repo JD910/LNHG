@@ -17,4 +17,6 @@ In addition, the Faster R-CNN was further tested on the *LUNA16* dataset. A tota
 To evaluate the stability and credibility of manual segmentation of lung nodules by the two local radiologists, a total of 100 lung nodules was randomly selected from the in-house dataset, and a second round of manual segmentation of the lung nodules was performed by the two radiologists. Dice coefficient (DC) was used to evaluate the inter-observer agreement between the two radiologists. 
 Results of the experiment indicated that the average inter-observer agreement of the two radiologists was 92.0% by DC, with a 95% CI of 87.2% to 99.8%. The examples of segmentation by the two radiologists are presented as following.
 
+<div align=left><img width="400" height="268" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig_F5.jpg"/></div><br />
+
 **Examples of lung nodule segmentation performed by the two radiologists. a and b denote a solid nodule, and c and d mean a juxta-pleural nodule with vascular. Here, a and c denote the manual segmentation by radiologist 1, and b and d denote the manual segmentation by the other radiologist.**
