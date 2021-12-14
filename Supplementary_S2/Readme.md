@@ -12,3 +12,9 @@ A comparison of lung nodule detection accuracy in the *LNHG*, *U-net*, *NoduleNe
 | *L-RF* | 410 | 363 | 363 | 53.0% | 95.3% | 68.1% |
 
 In addition, the Faster R-CNN was further tested on the *LUNA16* dataset. A total of 888 CT scans was obtained from the *subset0* to *subset9* in the *LUNA16* dataset. Original CT images were input into the Faster R-CNN, and the minimum diameter of lung nodules was defined as 3 mm as described in the manuscript. The results based on fivefold cross-validation indicated that the Faster R-CNN obtained a precision of 80.77% and a recall of 85.63% on the training dataset, and a precision of 75.00% and a recall of 82.53% on the test dataset, respectively.
+
+## Evaluation of inter-observer agreement on segmentation
+To evaluate the stability and credibility of manual segmentation of lung nodules by the two local radiologists, a total of 100 lung nodules was randomly selected from the in-house dataset, and a second round of manual segmentation of the lung nodules was performed by the two radiologists. Dice coefficient (DC) was used to evaluate the inter-observer agreement between the two radiologists. 
+Results of the experiment indicated that the average inter-observer agreement of the two radiologists was 92.0% by DC, with a 95% CI of 87.2% to 99.8%. The examples of segmentation by the two radiologists are presented as following.
+
+**Examples of lung nodule segmentation performed by the two radiologists. a and b denote a solid nodule, and c and d mean a juxta-pleural nodule with vascular. Here, a and c denote the manual segmentation by radiologist 1, and b and d denote the manual segmentation by the other radiologist.**
