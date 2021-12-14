@@ -23,7 +23,7 @@ This is the repository of *LNHG* model for end-to-end lung nodule segmentation a
 * train.py is used to start the training and validation of the Faster R-CNN branch.<br />
 * The [```_smooth_l1_loss()```](https://github.com/JD910/LNHG/blob/main/Detection/trainer.py#L112) and the GIoU loss are provided in the same function to calculate the location loss for better understanding. <br/>
 
-### To explain the workflow of the proposed *LNHG* model more clearly, a detailed description of the procedure of lung nodule image generation is shown in Figs. S1–S3. The figures below elaborated the segmentation of lung nodules, production of the final lung nodule image, and intra-nodular heterogeneous conversion from the produced lung nodule image.
+### To explain the workflow of the proposed *LNHG* model more clearly, a detailed description of the procedure of lung nodule image generation is shown in Figs. F1–F3. The figures below elaborated the segmentation of lung nodules, production of the final lung nodule image, and intra-nodular heterogeneous conversion from the produced lung nodule image.
 
 ## *Supp_S1*
 <div align=left><img width="800" height="268" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig_F1.jpg"/></div><br />
