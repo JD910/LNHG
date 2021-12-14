@@ -26,7 +26,7 @@ This is the repository of *LNHG* model for end-to-end lung nodule segmentation a
 ### To explain the workflow of the proposed *LNHG* model more clearly, a detailed description of the procedure of lung nodule image generation is shown in Figs. F1–F3. The figures below elaborated the segmentation of lung nodules, production of the final lung nodule image, and intra-nodular heterogeneous conversion from the produced lung nodule image.
 
 ## *Supp_S1*
-<div align=left><img width="800" height="268" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig_F1.jpg"/></div><br />
+<div align=left><img width="800" height="258" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig_F1.jpg"/></div><br />
 
 **Fig. F1. Explanation of the Workflow of the Proposed LNHG Model. The input is the original CT image, and *Block1–Block8* denote the network layers (with the same color) presented in Figure 3 in the manuscript. The feature map output by each block showed in the figure is the mean of all the feature maps.**<br />
 
