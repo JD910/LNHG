@@ -5,6 +5,8 @@
 
 This is the repository of *LNHG* model for end-to-end lung nodule segmentation and intra-nodular heterogeneity image generation.
 
+Citation: *Song, Jiangdian, et al. "Automatic lung nodule segmentation and intra-nodular heterogeneity image generation." IEEE Journal of Biomedical and Health Informatics (2021).*
+
 <div align=left><img width="610" height="300" src="https://github.com/JD910/LNHG/blob/main/Segmentation/Images/Fig2-New.jpg"/></div><br />
 
 
